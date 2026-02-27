@@ -30,12 +30,30 @@
 
       <div class="drawer-body">
         <aside class="drawer-nav">
-          <a href="#settings-plugins" class="nav-link">插件来源</a>
-          <a href="#settings-channels" class="nav-link">频道来源</a>
-          <a href="#settings-performance" class="nav-link">性能并发</a>
+          <button
+            type="button"
+            class="nav-link"
+            :class="{ active: activeSection === 'plugins' }"
+            @click="onNavClick('settings-plugins', 'plugins')">
+            插件来源
+          </button>
+          <button
+            type="button"
+            class="nav-link"
+            :class="{ active: activeSection === 'channels' }"
+            @click="onNavClick('settings-channels', 'channels')">
+            频道来源
+          </button>
+          <button
+            type="button"
+            class="nav-link"
+            :class="{ active: activeSection === 'performance' }"
+            @click="onNavClick('settings-performance', 'performance')">
+            性能并发
+          </button>
         </aside>
 
-        <div class="drawer-main">
+        <div ref="drawerMainRef" class="drawer-main" @scroll="onDrawerScroll">
           <section id="settings-plugins" class="drawer__section">
             <div class="section__title">
               <strong>插件来源</strong>
@@ -113,7 +131,7 @@
       </div>
 
       <footer class="drawer__footer">
-        <button class="btn btn--danger" type="button" @click="$emit('reset-default')">恢复默认</button>
+        <button class="btn btn--subtle" type="button" @click="$emit('reset-default')">恢复默认</button>
       </footer>
     </div>
   </div>
@@ -148,6 +166,8 @@ const inner = ref<UserSettings>({
 
 const DEFAULT_CONCURRENCY = 4;
 const DEFAULT_PLUGIN_TIMEOUT = 5000;
+const drawerMainRef = ref<HTMLElement | null>(null);
+const activeSection = ref<"plugins" | "channels" | "performance">("plugins");
 
 watch(
   () => props.modelValue,
@@ -156,6 +176,15 @@ watch(
     inner.value = JSON.parse(JSON.stringify(v));
   },
   { immediate: true }
+);
+
+watch(
+  () => props.open,
+  async (open) => {
+    if (!open) return;
+    await nextTick();
+    setActiveSectionByScroll();
+  }
 );
 
 function saveTemp() {
@@ -183,6 +212,40 @@ function onClearAllTg() {
   inner.value.enabledTgChannels = [];
   saveTemp();
 }
+
+function onNavClick(
+  id: "settings-plugins" | "settings-channels" | "settings-performance",
+  key: "plugins" | "channels" | "performance"
+) {
+  activeSection.value = key;
+  const root = drawerMainRef.value;
+  const el = root?.querySelector<HTMLElement>(`#${id}`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function setActiveSectionByScroll() {
+  const root = drawerMainRef.value;
+  if (!root) return;
+  const ids = [
+    { id: "settings-plugins", key: "plugins" as const },
+    { id: "settings-channels", key: "channels" as const },
+    { id: "settings-performance", key: "performance" as const },
+  ];
+  const threshold = root.scrollTop + 24;
+  let current = ids[0].key;
+
+  for (const item of ids) {
+    const el = root.querySelector<HTMLElement>(`#${item.id}`);
+    if (!el) continue;
+    if (el.offsetTop <= threshold) current = item.key;
+  }
+  activeSection.value = current;
+}
+
+function onDrawerScroll() {
+  setActiveSectionByScroll();
+}
 </script>
 
 <style scoped>
@@ -207,10 +270,31 @@ function onClearAllTg() {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   border-left: 1px solid var(--border-medium);
   animation: slideInRight 0.3s ease;
+}
+
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.drawer__header strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.header-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
 .drawer-body {
@@ -238,9 +322,9 @@ function onClearAllTg() {
   background: rgba(255, 255, 255, 0.4);
   color: var(--text-secondary);
   font-size: 11px;
-  text-decoration: none;
   text-align: center;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .nav-link:hover {
@@ -248,29 +332,17 @@ function onClearAllTg() {
   color: var(--primary-dark);
 }
 
+.nav-link.active {
+  border-color: rgba(15, 118, 110, 0.45);
+  background: rgba(15, 118, 110, 0.14);
+  color: var(--primary-dark);
+}
+
 .drawer-main {
   min-width: 0;
-}
-
-.drawer__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.drawer__header strong {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.header-subtitle {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: var(--text-tertiary);
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .drawer__section {
@@ -417,27 +489,25 @@ function onClearAllTg() {
   min-width: 56px;
 }
 
-.btn--danger {
-  color: #dc2626;
-  border-color: rgba(220, 38, 38, 0.25);
-  background: rgba(220, 38, 38, 0.06);
+.btn--subtle {
+  color: var(--text-secondary);
+  border-color: var(--border-medium);
+  background: rgba(255, 255, 255, 0.55);
 }
 
-.btn--danger:hover {
-  background: rgba(220, 38, 38, 0.1);
-  border-color: rgba(220, 38, 38, 0.38);
+.btn--subtle:hover {
+  color: var(--text-primary);
+  border-color: var(--primary);
+  background: rgba(15, 118, 110, 0.08);
 }
 
 .drawer__footer {
-  margin-top: auto;
+  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-light);
-  position: sticky;
-  bottom: 0;
-  background: linear-gradient(to top, rgba(255, 253, 248, 0.96), rgba(255, 253, 248, 0.76));
 }
 
 @media (max-width: 640px) {
@@ -486,6 +556,12 @@ function onClearAllTg() {
     color: #ccfbf1;
   }
 
+  .nav-link.active {
+    border-color: rgba(45, 212, 191, 0.45);
+    background: rgba(15, 118, 110, 0.25);
+    color: #ccfbf1;
+  }
+
   .drawer__section {
     background: rgba(15, 23, 42, 0.36);
     border-color: rgba(100, 116, 139, 0.42);
@@ -517,14 +593,16 @@ function onClearAllTg() {
     border-color: rgba(100, 116, 139, 0.5);
   }
 
-  .btn--danger {
-    color: #fca5a5;
-    background: rgba(220, 38, 38, 0.15);
-    border-color: rgba(220, 38, 38, 0.35);
+  .btn--subtle {
+    color: var(--text-secondary);
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(100, 116, 139, 0.45);
   }
 
-  .drawer__footer {
-    background: linear-gradient(to top, rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.65));
+  .btn--subtle:hover {
+    color: #ccfbf1;
+    border-color: rgba(45, 212, 191, 0.45);
+    background: rgba(15, 118, 110, 0.18);
   }
 }
 
