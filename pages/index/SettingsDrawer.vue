@@ -10,9 +10,12 @@
     ">
     <div class="drawer" role="dialog" aria-modal="true" aria-label="搜索设置">
       <header class="drawer__header">
-        <strong>搜索设置</strong>
+        <div>
+          <strong>搜索设置</strong>
+          <p class="header-subtitle">修改后自动保存</p>
+        </div>
         <button
-          class="btn"
+          class="btn btn--close"
           type="button"
           aria-label="关闭设置"
           @click="
@@ -25,81 +28,89 @@
         </button>
       </header>
 
-      <section class="drawer__section">
-        <div class="section__title">
-          <strong>插件来源</strong>
-          <div class="section__tools">
-            <button class="btn" type="button" @click="onSelectAll">全选</button>
-            <button class="btn" type="button" @click="onClearAll">全不选</button>
-          </div>
-        </div>
-        <div class="plugin-grid">
-          <label v-for="name in allPlugins" :key="name" class="plugin-item">
-            <input
-              type="checkbox"
-              :value="name"
-              v-model="inner.enabledPlugins"
-              @change="saveTemp" />
-            <span>{{ name }}</span>
-          </label>
-        </div>
-      </section>
+      <div class="drawer-body">
+        <aside class="drawer-nav">
+          <a href="#settings-plugins" class="nav-link">插件来源</a>
+          <a href="#settings-channels" class="nav-link">频道来源</a>
+          <a href="#settings-performance" class="nav-link">性能并发</a>
+        </aside>
 
-      <section class="drawer__section">
-        <div class="section__title">
-          <strong>频道来源</strong>
-          <div class="section__tools">
-            <button class="btn" type="button" @click="onSelectAllTg">全选</button>
-            <button class="btn" type="button" @click="onClearAllTg">全不选</button>
-          </div>
-        </div>
-        <div class="plugin-grid">
-          <label v-for="name in allTgChannels" :key="name" class="plugin-item">
-            <input
-              type="checkbox"
-              :value="name"
-              v-model="inner.enabledTgChannels"
-              @change="saveTemp" />
-            <span>{{ name }}</span>
-          </label>
-        </div>
-      </section>
+        <div class="drawer-main">
+          <section id="settings-plugins" class="drawer__section">
+            <div class="section__title">
+              <strong>插件来源</strong>
+              <div class="section__tools">
+                <button class="btn" type="button" @click="onSelectAll">全选</button>
+                <button class="btn" type="button" @click="onClearAll">全不选</button>
+              </div>
+            </div>
+            <div class="plugin-grid">
+              <label v-for="name in allPlugins" :key="name" class="plugin-item">
+                <input
+                  type="checkbox"
+                  :value="name"
+                  v-model="inner.enabledPlugins"
+                  @change="saveTemp" />
+                <span>{{ name }}</span>
+              </label>
+            </div>
+          </section>
 
-      <section class="drawer__section">
-        <div class="section__title"><strong>性能与并发</strong></div>
-        <div class="row row-with-hint">
-          <label class="label" for="concurrency-input">插件并发数</label>
-          <input
-            id="concurrency-input"
-            type="number"
-            min="1"
-            max="16"
-            v-model.number="inner.concurrency"
-            @change="saveTemp"
-            class="input"
-            :placeholder="String(DEFAULT_CONCURRENCY)"
-            :title="`默认 ${DEFAULT_CONCURRENCY}，范围 1-16`" />
-          <span class="hint"
-            >默认 {{ DEFAULT_CONCURRENCY }}，范围 1-16</span
-          >
+          <section id="settings-channels" class="drawer__section">
+            <div class="section__title">
+              <strong>频道来源</strong>
+              <div class="section__tools">
+                <button class="btn" type="button" @click="onSelectAllTg">全选</button>
+                <button class="btn" type="button" @click="onClearAllTg">全不选</button>
+              </div>
+            </div>
+            <div class="plugin-grid">
+              <label v-for="name in allTgChannels" :key="name" class="plugin-item">
+                <input
+                  type="checkbox"
+                  :value="name"
+                  v-model="inner.enabledTgChannels"
+                  @change="saveTemp" />
+                <span>{{ name }}</span>
+              </label>
+            </div>
+          </section>
+
+          <section id="settings-performance" class="drawer__section">
+            <div class="section__title"><strong>性能与并发</strong></div>
+
+            <div class="field">
+              <label class="label" for="concurrency-input">插件并发数</label>
+              <input
+                id="concurrency-input"
+                type="number"
+                min="1"
+                max="16"
+                v-model.number="inner.concurrency"
+                @change="saveTemp"
+                class="input"
+                :placeholder="String(DEFAULT_CONCURRENCY)"
+                :title="`默认 ${DEFAULT_CONCURRENCY}，范围 1-16`" />
+              <span class="hint">默认 {{ DEFAULT_CONCURRENCY }}，范围 1-16</span>
+            </div>
+
+            <div class="field">
+              <label class="label" for="timeout-input">插件超时(ms)</label>
+              <input
+                id="timeout-input"
+                type="number"
+                min="1000"
+                step="500"
+                v-model.number="inner.pluginTimeoutMs"
+                @change="saveTemp"
+                class="input"
+                :placeholder="String(DEFAULT_PLUGIN_TIMEOUT)"
+                :title="`默认 ${DEFAULT_PLUGIN_TIMEOUT} ms`" />
+              <span class="hint">默认 {{ DEFAULT_PLUGIN_TIMEOUT }} ms</span>
+            </div>
+          </section>
         </div>
-        <div class="row">
-          <label class="label" for="timeout-input">插件超时(ms)</label>
-          <input
-            id="timeout-input"
-            type="number"
-            min="1000"
-            step="500"
-            v-model.number="inner.pluginTimeoutMs"
-            @change="saveTemp"
-            class="input"
-            :placeholder="String(DEFAULT_PLUGIN_TIMEOUT)"
-            :title="`默认 ${DEFAULT_PLUGIN_TIMEOUT} ms`" />
-          <span class="hint"
-            >默认 {{ DEFAULT_PLUGIN_TIMEOUT }} ms</span
-          >
-        </div>
-      </section>
+      </div>
 
       <footer class="drawer__footer">
         <button class="btn btn--danger" type="button" @click="$emit('reset-default')">恢复默认</button>
@@ -175,11 +186,10 @@ function onClearAllTg() {
 </script>
 
 <style scoped>
-/* 抽屉遮罩 */
 .drawer-mask {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   display: flex;
   justify-content: flex-end;
@@ -187,15 +197,14 @@ function onClearAllTg() {
   animation: fadeIn 0.3s ease;
 }
 
-/* 抽屉主体 */
 .drawer {
-  width: min(480px, 92vw);
+  width: min(460px, 92vw);
   height: 100vh;
   background: rgba(255, 253, 248, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -204,43 +213,84 @@ function onClearAllTg() {
   animation: slideInRight 0.3s ease;
 }
 
-/* 抽屉头部 */
+.drawer-body {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 10px;
+  min-height: 0;
+  flex: 1;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 0;
+  height: fit-content;
+}
+
+.nav-link {
+  display: block;
+  padding: 8px 6px;
+  border-radius: 9px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 700;
+}
+
+.nav-link:hover {
+  border-color: var(--border-medium);
+  color: var(--primary-dark);
+}
+
+.drawer-main {
+  min-width: 0;
+}
+
 .drawer__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-light);
 }
 
 .drawer__header strong {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
-/* 抽屉部分 */
-.drawer__section {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
+.header-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
-/* 部分标题 */
+.drawer__section {
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(212, 199, 171, 0.6);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
 .section__title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .section__title strong {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -249,7 +299,6 @@ function onClearAllTg() {
   gap: 6px;
 }
 
-/* 插件网格 */
 .plugin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -266,10 +315,10 @@ function onClearAllTg() {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 8px;
+  padding: 6px 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  border-radius: 999px;
   transition: background-color var(--transition-fast), border-color var(--transition-fast),
     transform var(--transition-fast);
   min-width: 0;
@@ -294,36 +343,31 @@ function onClearAllTg() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
-/* 行 */
-.row {
+.field {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.row-with-hint {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   margin-bottom: 10px;
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
-  font-weight: 500;
-  min-width: 110px;
+  font-weight: 700;
 }
 
 .input {
-  flex: 1;
+  width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--border-light);
   background: var(--bg-secondary);
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-primary);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
     background-color var(--transition-fast);
@@ -340,19 +384,18 @@ function onClearAllTg() {
 }
 
 .hint {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-tertiary);
 }
 
-/* 按钮 */
 .btn {
-  padding: 8px 12px;
+  padding: 7px 10px;
   border: 1px solid var(--border-light);
   background: var(--bg-secondary);
   color: var(--text-primary);
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   transition: background-color var(--transition-fast), border-color var(--transition-fast),
     color var(--transition-fast), transform var(--transition-fast),
@@ -370,15 +413,8 @@ function onClearAllTg() {
   transform: translateY(0);
 }
 
-.btn--primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
-}
-
-.btn--primary:hover {
-  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.42);
+.btn--close {
+  min-width: 56px;
 }
 
 .btn--danger {
@@ -392,62 +428,67 @@ function onClearAllTg() {
   border-color: rgba(220, 38, 38, 0.38);
 }
 
-/* 抽屉底部 */
 .drawer__footer {
   margin-top: auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
-  padding-top: 16px;
+  padding-top: 10px;
   border-top: 1px solid var(--border-light);
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255, 253, 248, 0.96), rgba(255, 253, 248, 0.76));
 }
 
-/* 移动端优化 */
 @media (max-width: 640px) {
   .drawer {
     width: 100vw;
-    padding: 16px;
+    padding: 14px;
   }
 
-  .drawer__header {
-    margin-bottom: 12px;
+  .drawer-body {
+    grid-template-columns: 1fr;
   }
 
-  .drawer__section {
-    padding: 12px;
+  .drawer-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+    min-width: 84px;
   }
 
   .plugin-grid {
     grid-template-columns: 1fr;
     gap: 6px;
   }
-
-  .row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .label {
-    min-width: auto;
-  }
-
-  .btn {
-    padding: 8px 10px;
-    font-size: 12px;
-  }
 }
 
-/* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .drawer {
     background: rgba(17, 24, 39, 0.92);
     border-left-color: rgba(75, 85, 99, 0.8);
   }
 
+  .nav-link {
+    background: rgba(30, 41, 59, 0.55);
+    border-color: rgba(100, 116, 139, 0.35);
+    color: var(--text-secondary);
+  }
+
+  .nav-link:hover {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(100, 116, 139, 0.55);
+    color: #ccfbf1;
+  }
+
   .drawer__section {
-    background: rgba(15, 23, 42, 0.5);
-    border-color: rgba(100, 116, 139, 0.3);
+    background: rgba(15, 23, 42, 0.36);
+    border-color: rgba(100, 116, 139, 0.42);
   }
 
   .plugin-item {
@@ -481,28 +522,12 @@ function onClearAllTg() {
     background: rgba(220, 38, 38, 0.15);
     border-color: rgba(220, 38, 38, 0.35);
   }
-}
 
-/* 高对比度模式支持 */
-@media (prefers-contrast: high) {
-  .drawer {
-    border-left-width: 3px;
-  }
-
-  .drawer__section {
-    border-width: 2px;
-  }
-
-  .plugin-item {
-    border-width: 2px;
-  }
-
-  .btn {
-    border-width: 2px;
+  .drawer__footer {
+    background: linear-gradient(to top, rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.65));
   }
 }
 
-/* 减少动画模式支持 */
 @media (prefers-reduced-motion: reduce) {
   .drawer-mask,
   .drawer {
@@ -515,7 +540,6 @@ function onClearAllTg() {
   }
 }
 
-/* 动画 */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
