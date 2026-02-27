@@ -405,6 +405,12 @@ function onDrawerScroll() {
 .plugin-item input[type="checkbox"] {
   width: 16px;
   height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
+  margin: 0;
+  flex: 0 0 16px;
   cursor: pointer;
   accent-color: var(--primary);
 }
