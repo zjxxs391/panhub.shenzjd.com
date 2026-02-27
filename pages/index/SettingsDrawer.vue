@@ -8,11 +8,13 @@
         $emit('update:open', false);
       }
     ">
-    <div class="drawer">
+    <div class="drawer" role="dialog" aria-modal="true" aria-label="搜索设置">
       <header class="drawer__header">
         <strong>搜索设置</strong>
         <button
           class="btn"
+          type="button"
+          aria-label="关闭设置"
           @click="
             () => {
               emitSave();
@@ -27,8 +29,8 @@
         <div class="section__title">
           <strong>插件来源</strong>
           <div class="section__tools">
-            <button class="btn" @click="onSelectAll">全选</button>
-            <button class="btn" @click="onClearAll">全不选</button>
+            <button class="btn" type="button" @click="onSelectAll">全选</button>
+            <button class="btn" type="button" @click="onClearAll">全不选</button>
           </div>
         </div>
         <div class="plugin-grid">
@@ -47,8 +49,8 @@
         <div class="section__title">
           <strong>频道来源</strong>
           <div class="section__tools">
-            <button class="btn" @click="onSelectAllTg">全选</button>
-            <button class="btn" @click="onClearAllTg">全不选</button>
+            <button class="btn" type="button" @click="onSelectAllTg">全选</button>
+            <button class="btn" type="button" @click="onClearAllTg">全不选</button>
           </div>
         </div>
         <div class="plugin-grid">
@@ -65,9 +67,10 @@
 
       <section class="drawer__section">
         <div class="section__title"><strong>性能与并发</strong></div>
-        <div class="row" style="margin-bottom: 8px">
-          <label class="label" style="width: 120px">插件并发数</label>
+        <div class="row row-with-hint">
+          <label class="label" for="concurrency-input">插件并发数</label>
           <input
+            id="concurrency-input"
             type="number"
             min="1"
             max="16"
@@ -76,13 +79,14 @@
             class="input"
             :placeholder="String(DEFAULT_CONCURRENCY)"
             :title="`默认 ${DEFAULT_CONCURRENCY}，范围 1-16`" />
-          <span style="font-size: 12px; color: #666"
+          <span class="hint"
             >默认 {{ DEFAULT_CONCURRENCY }}，范围 1-16</span
           >
         </div>
         <div class="row">
-          <label class="label" style="width: 120px">插件超时(ms)</label>
+          <label class="label" for="timeout-input">插件超时(ms)</label>
           <input
+            id="timeout-input"
             type="number"
             min="1000"
             step="500"
@@ -91,14 +95,14 @@
             class="input"
             :placeholder="String(DEFAULT_PLUGIN_TIMEOUT)"
             :title="`默认 ${DEFAULT_PLUGIN_TIMEOUT} ms`" />
-          <span style="font-size: 12px; color: #666"
+          <span class="hint"
             >默认 {{ DEFAULT_PLUGIN_TIMEOUT }} ms</span
           >
         </div>
       </section>
 
       <footer class="drawer__footer">
-        <button class="btn" @click="$emit('reset-default')">恢复默认</button>
+        <button class="btn btn--danger" type="button" @click="$emit('reset-default')">恢复默认</button>
       </footer>
     </div>
   </div>
@@ -176,7 +180,7 @@ function onClearAllTg() {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: flex-end;
   z-index: 1000;
@@ -187,16 +191,16 @@ function onClearAllTg() {
 .drawer {
   width: min(480px, 92vw);
   height: 100vh;
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 253, 248, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   overflow: auto;
   overscroll-behavior: contain;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid var(--border-medium);
   animation: slideInRight 0.3s ease;
 }
 
@@ -205,9 +209,9 @@ function onClearAllTg() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .drawer__header strong {
@@ -220,9 +224,9 @@ function onClearAllTg() {
 .drawer__section {
   background: var(--bg-primary);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  margin-bottom: 14px;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -249,7 +253,7 @@ function onClearAllTg() {
 .plugin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 
 @media (min-width: 820px) {
@@ -262,7 +266,7 @@ function onClearAllTg() {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  padding: 7px 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -302,11 +306,15 @@ function onClearAllTg() {
   margin-bottom: 8px;
 }
 
+.row-with-hint {
+  margin-bottom: 10px;
+}
+
 .label {
   font-size: 13px;
   color: var(--text-secondary);
   font-weight: 500;
-  min-width: 120px;
+  min-width: 110px;
 }
 
 .input {
@@ -314,7 +322,7 @@ function onClearAllTg() {
   padding: 8px 10px;
   border: 1px solid var(--border-light);
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   font-size: 13px;
   color: var(--text-primary);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
@@ -331,13 +339,18 @@ function onClearAllTg() {
   color: var(--text-tertiary);
 }
 
+.hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
 /* 按钮 */
 .btn {
   padding: 8px 12px;
   border: 1px solid var(--border-light);
   background: var(--bg-secondary);
   color: var(--text-primary);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -366,6 +379,17 @@ function onClearAllTg() {
 
 .btn--primary:hover {
   box-shadow: 0 6px 16px rgba(15, 118, 110, 0.42);
+}
+
+.btn--danger {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.btn--danger:hover {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.38);
 }
 
 /* 抽屉底部 */
@@ -417,8 +441,8 @@ function onClearAllTg() {
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .drawer {
-    background: rgba(15, 23, 42, 0.8);
-    border-left-color: rgba(255, 255, 255, 0.1);
+    background: rgba(17, 24, 39, 0.92);
+    border-left-color: rgba(75, 85, 99, 0.8);
   }
 
   .drawer__section {
@@ -450,6 +474,12 @@ function onClearAllTg() {
   .btn:hover {
     background: rgba(15, 23, 42, 0.7);
     border-color: rgba(100, 116, 139, 0.5);
+  }
+
+  .btn--danger {
+    color: #fca5a5;
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.35);
   }
 }
 

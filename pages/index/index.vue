@@ -13,9 +13,6 @@
           <span class="hero-chip">多平台覆盖</span>
           <span class="hero-chip">结果去重</span>
         </div>
-        <button class="hero-reset" type="button" @click="fullReset" aria-label="重置搜索">
-          重置当前搜索
-        </button>
       </div>
     </header>
 
@@ -388,17 +385,6 @@ function visibleSorted(items: any[]) {
   font-weight: 700;
 }
 
-.hero-reset {
-  margin-top: 16px;
-  padding: 8px 12px;
-  border: 1px dashed rgba(15, 118, 110, 0.35);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.45);
-  color: var(--primary-dark);
-  font-size: 12px;
-  font-weight: 700;
-}
-
 /* 统计和过滤器栏 */
 .stats-bar {
   background: var(--bg-primary);
@@ -656,12 +642,6 @@ function visibleSorted(items: any[]) {
     font-size: 11px;
   }
 
-  .hero-reset {
-    width: 100%;
-    margin-top: 12px;
-    text-align: center;
-  }
-
   .stats-bar {
     padding: 12px;
   }
@@ -724,12 +704,6 @@ function visibleSorted(items: any[]) {
   .hero-chip {
     background: rgba(17, 24, 39, 0.45);
     border-color: rgba(45, 212, 191, 0.35);
-  }
-
-  .hero-reset {
-    background: rgba(17, 24, 39, 0.4);
-    border-color: rgba(45, 212, 191, 0.4);
-    color: #ccfbf1;
   }
 
   .stat-item {

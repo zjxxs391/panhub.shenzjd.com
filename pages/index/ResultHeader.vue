@@ -95,12 +95,12 @@ const currentSort = computed(() =>
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 12px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
   margin: 16px 0;
 }
 
@@ -140,10 +140,10 @@ const currentSort = computed(() =>
 }
 
 .filter-pill.active {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 /* 右侧部分 - 统计和排序 */
@@ -161,8 +161,8 @@ const currentSort = computed(() =>
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(15, 118, 110, 0.12);
+  border: 1px solid rgba(15, 118, 110, 0.24);
   border-radius: 999px;
   font-size: 12px;
   color: var(--primary);
@@ -326,8 +326,8 @@ const currentSort = computed(() =>
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .result-header {
-    background: rgba(15, 23, 42, 0.5);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(17, 24, 39, 0.5);
+    border-color: rgba(75, 85, 99, 0.42);
   }
 
   .filter-pill {
@@ -341,8 +341,8 @@ const currentSort = computed(() =>
   }
 
   .loading-indicator {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.25);
+    background: rgba(15, 118, 110, 0.2);
+    border-color: rgba(15, 118, 110, 0.32);
   }
 
   .stat-item {
