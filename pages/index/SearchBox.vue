@@ -13,7 +13,8 @@
           ref="inputEl"
           :value="modelValue"
           :placeholder="placeholder"
-          autofocus
+          name="kw"
+          aria-label="搜索关键词"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -40,6 +41,7 @@
             "
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd"
+            aria-label="重置搜索"
             title="重置搜索">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -59,6 +61,7 @@
             "
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd"
+            aria-label="清空关键词"
             title="清空">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -74,6 +77,7 @@
             @click="$emit('pause')"
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd"
+            aria-label="暂停搜索"
             title="暂停搜索">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="6" y="4" width="4" height="16" rx="1"></rect>
@@ -90,6 +94,7 @@
             @click="$emit('continue')"
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd"
+            aria-label="继续搜索"
             title="继续搜索">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M5 3l14 9-14 9V3z"></path>
@@ -106,6 +111,7 @@
             class="action-btn primary"
             type="button"
             :disabled="!modelValue"
+            aria-label="开始搜索"
             @click="handleSearch"
             @touchstart="handleTouchStart"
             @touchend="handleTouchEnd">
@@ -172,13 +178,14 @@ function handleTouchEnd() {
 }
 
 onMounted(() => {
-  // 等待一帧后再聚焦，避免与 SSR/过渡阶段冲突
-  requestAnimationFrame(() => {
-    // iOS Safari兼容性：使用setTimeout确保DOM完全渲染
-    setTimeout(() => {
-      inputEl.value?.focus();
-    }, 100);
-  });
+  // 仅在桌面端自动聚焦，避免移动端抢焦点和键盘闪烁
+  if (window.matchMedia("(pointer: fine)").matches) {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        inputEl.value?.focus();
+      }, 100);
+    });
+  }
 });
 </script>
 
@@ -198,12 +205,13 @@ onMounted(() => {
   gap: 12px;
   padding: 12px 16px;
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-medium);
+  border-radius: 18px;
   box-shadow: var(--shadow-lg);
-  transition: all var(--transition-normal);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal),
+    transform var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -214,7 +222,7 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg, var(--primary), var(--secondary));
   opacity: 0;
   transition: opacity var(--transition-normal);
@@ -222,8 +230,8 @@ onMounted(() => {
 
 .search-box.focused {
   border-color: var(--primary);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25);
-  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 118, 110, 0.14);
+  transform: translateY(-2px);
 }
 
 .search-box.focused::before {
@@ -232,12 +240,12 @@ onMounted(() => {
 
 .search-box.loading {
   border-color: var(--primary);
-  animation: searchPulse 2s ease-in-out infinite;
+  animation: searchPulse 2.2s ease-in-out infinite;
 }
 
 @keyframes searchPulse {
-  0%, 100% { box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25); }
-  50% { box-shadow: 0 8px 40px rgba(99, 102, 241, 0.4); }
+  0%, 100% { box-shadow: 0 8px 32px rgba(15, 118, 110, 0.22); }
+  50% { box-shadow: 0 8px 40px rgba(15, 118, 110, 0.34); }
 }
 
 /* 搜索图标 */
@@ -301,7 +309,9 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   white-space: nowrap;
 
   /* iOS Safari兼容性 */
@@ -319,14 +329,14 @@ onMounted(() => {
 
 /* 主要按钮 - 渐变背景 */
 .action-btn.primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 .action-btn.primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.36);
 }
 
 .action-btn.primary:active:not(:disabled) {
@@ -335,14 +345,14 @@ onMounted(() => {
 
 /* 幽灵按钮 - 透明背景 */
 .action-btn.ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.5);
   color: var(--text-secondary);
   border: 1px solid var(--border-light);
   padding: 8px;
 }
 
 .action-btn.ghost:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-color: var(--border-medium);
   color: var(--text-primary);
 }

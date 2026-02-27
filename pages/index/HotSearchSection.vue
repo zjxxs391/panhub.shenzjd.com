@@ -3,13 +3,15 @@
   <div v-if="!loading && searches.length === 0" class="hidden"></div>
 
   <div v-else class="hot-search-section">
-    <h2 class="section-title">其他用户在搜</h2>
-
+    <div class="section-head">
+      <h2 class="section-title">热门搜索</h2>
+      <p class="section-subtitle">点击任意关键词可快速发起搜索</p>
+    </div>
     <div class="cloud-container">
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
-        <span>搜索热度加载中...</span>
+        <span>搜索热度加载中…</span>
       </div>
 
       <!-- 智能标签云 -->
@@ -19,6 +21,7 @@
           :key="item.term"
           class="tag-item"
           :style="getTagStyle(item.score)"
+          :aria-label="`搜索热词 ${item.term}`"
           @click="onSearchClick(item.term)"
         >
           {{ item.term }}
@@ -51,22 +54,18 @@ const hasInitialized = ref(false);
 
 // 获取热搜数据
 async function fetchHotSearches() {
-  console.log('[HotSearchSection] 开始获取热搜数据...');
   loading.value = true;
   try {
     const response = await fetch('/api/hot-searches?limit=30');
     const data = await response.json();
-    console.log('[HotSearchSection] API 响应:', data);
 
     if (data.code === 0 && data.data?.hotSearches) {
       // 按分数排序，高分在前
       searches.value = data.data.hotSearches
         .sort((a: HotSearchItem, b: HotSearchItem) => b.score - a.score)
         .slice(0, 30);
-      console.log('[HotSearchSection] 获取到热搜数据:', searches.value.length, '条');
     }
   } catch (error) {
-    console.error('[HotSearchSection] 获取热搜失败:', error);
     // 失败时不显示任何内容
     searches.value = [];
   } finally {
@@ -77,17 +76,14 @@ async function fetchHotSearches() {
 // 首次初始化（只在页面加载时执行一次）
 async function init() {
   if (hasInitialized.value) {
-    console.log('[HotSearchSection] 已初始化，跳过');
     return;
   }
-  console.log('[HotSearchSection] 首次初始化...');
   hasInitialized.value = true;
   await fetchHotSearches();
 }
 
 // 刷新数据（每次重置时调用）
 async function refresh() {
-  console.log('[HotSearchSection] 手动刷新数据...');
   await fetchHotSearches();
 }
 
@@ -101,28 +97,21 @@ function getTagStyle(score: number) {
   const normalized = (score - minScore) / (maxScore - minScore || 1);
   const fontSize = 12 + normalized * 12; // 12px - 24px
 
-  // 分数映射到颜色 - 使用 PanHub 主题色系
-  const colors = [
-    { threshold: 80, color: '#ef4444' },  // 红色 - 最热
-    { threshold: 60, color: '#f59e0b' },  // 橙色 - 热门
-    { threshold: 40, color: '#eab308' },  // 黄色 - 较热
-    { threshold: 20, color: '#22c55e' },  // 绿色 - 普通
-    { threshold: 0, color: '#3b82f6' }    // 蓝色 - 一般
-  ];
-
-  const color = colors.find(c => score >= c.threshold)?.color || '#6b7280';
-
   // 分数映射到粗细和透明度
   const fontWeight = score >= 70 ? 800 : score >= 40 ? 700 : 600;
-  const opacity = 0.7 + normalized * 0.3; // 0.7 - 1.0
+  const opacity = 0.75 + normalized * 0.25; // 0.75 - 1.0
+  const bgOpacity = 0.08 + normalized * 0.22;
+  const borderOpacity = 0.16 + normalized * 0.3;
 
   return {
     fontSize: `${fontSize}px`,
-    color: color,
+    color: "var(--primary-dark)",
     fontWeight: fontWeight,
     opacity: opacity,
     padding: `${6 + normalized * 2}px ${10 + normalized * 4}px`,
-    margin: `${4 + (1 - normalized) * 2}px`
+    margin: `${4 + (1 - normalized) * 2}px`,
+    backgroundColor: `rgba(15, 118, 110, ${bgOpacity.toFixed(3)})`,
+    borderColor: `rgba(15, 118, 110, ${borderOpacity.toFixed(3)})`
   };
 }
 
@@ -143,25 +132,25 @@ defineExpose({
   width: 100%;
 }
 
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
+.section-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-/* 使用 SVG 图标替代 emoji */
-.section-title::before {
-  content: '';
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
+.section-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
 .cloud-container {
@@ -174,12 +163,12 @@ defineExpose({
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 24px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
+  gap: 8px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
   min-height: 180px;
 }
 
@@ -188,11 +177,11 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease,
+    background-color 200ms ease;
   white-space: nowrap;
   text-align: center;
   line-height: 1.2;
@@ -202,8 +191,8 @@ defineExpose({
 
 .tag-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  filter: brightness(1.08);
+  box-shadow: 0 7px 14px rgba(15, 118, 110, 0.18);
+  filter: brightness(1.03);
   z-index: 10;
 }
 
@@ -216,16 +205,16 @@ defineExpose({
   gap: 12px;
   padding: 40px 20px;
   color: var(--text-secondary);
-  background: var(--bg-glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
 }
 
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(99, 102, 241, 0.2);
+  border: 3px solid rgba(15, 118, 110, 0.2);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -238,18 +227,18 @@ defineExpose({
 
 /* 移动端优化 */
 @media (max-width: 640px) {
-  .section-title {
-    font-size: 18px;
+  .section-head {
+    flex-direction: column;
+    gap: 4px;
   }
 
-  .section-title::before {
-    width: 20px;
-    height: 20px;
+  .section-title {
+    font-size: 15px;
   }
 
   .tag-cloud {
-    padding: 16px;
-    gap: 4px;
+    padding: 14px;
+    gap: 6px;
     min-height: 140px;
   }
 
@@ -261,23 +250,21 @@ defineExpose({
 /* 深色模式 */
 @media (prefers-color-scheme: dark) {
   .tag-cloud {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(17, 24, 39, 0.5);
+    border-color: rgba(75, 85, 99, 0.4);
   }
 
   .loading-state {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(17, 24, 39, 0.5);
+    border-color: rgba(75, 85, 99, 0.4);
   }
 
   .tag-item {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(100, 116, 139, 0.3);
+    color: #ccfbf1 !important;
   }
 
   .tag-item:hover {
-    background: rgba(15, 23, 42, 0.7);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 7px 14px rgba(15, 118, 110, 0.28);
   }
 }
 

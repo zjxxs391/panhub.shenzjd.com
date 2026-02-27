@@ -1,16 +1,18 @@
 <template>
   <div class="home">
-    <!-- 英雄区域 - 紧凑版 -->
+    <!-- 英雄区域 -->
     <header class="hero">
       <div class="hero-content">
-        <div class="brand-badge" @click="fullReset" title="点击重置">
-          <span class="brand-emoji">🔍</span>
-          <span class="brand-name">PanHub</span>
-        </div>
-        <h1 class="hero-title">全网最全的网盘搜索工具</h1>
+        <p class="hero-kicker">PanHub 搜索聚合引擎</p>
+        <h1 class="hero-title">一键检索全网网盘资源</h1>
         <p class="hero-description">
-          聚合阿里云盘、夸克、百度网盘、115、迅雷等平台，实时检索各类分享链接与资源
+          聚合阿里云盘、夸克、百度网盘、115、迅雷等平台，快速、直达、少打扰
         </p>
+        <div class="hero-meta">
+          <span class="hero-chip">实时聚合</span>
+          <span class="hero-chip">多平台覆盖</span>
+          <span class="hero-chip">结果去重</span>
+        </div>
       </div>
     </header>
 
@@ -39,7 +41,7 @@
           </span>
           <span v-if="searchState.deepLoading && !searchState.paused" class="loading-indicator">
             <span class="pulse-dot"></span>
-            <span class="loading-text">持续搜索中...</span>
+            <span class="loading-text">持续搜索中…</span>
           </span>
           <span v-if="searchState.paused" class="paused-indicator-bar">
             <span class="pause-icon">⏸</span>
@@ -122,7 +124,6 @@ import SearchBox from "./SearchBox.vue";
 import ResultGroup from "./ResultGroup.vue";
 import HotSearchSection from "./HotSearchSection.vue";
 import { PLATFORM_INFO } from "~/config/plugins";
-import type { MergedLinks } from "~/server/core/types/models";
 
 const config = useRuntimeConfig();
 const apiBase = (config.public?.apiBase as string) || "/api";
@@ -136,7 +137,6 @@ onMounted(async () => {
   // 等待组件挂载完成
   await new Promise(resolve => setTimeout(resolve, 100));
   if (hotSearchRef.value) {
-    console.log('[index] 页面加载，初始化热搜数据');
     await hotSearchRef.value.init();
   }
 });
@@ -237,18 +237,11 @@ async function handleContinueSearch() {
 
 // 完全重置 - 清空输入框、结果、状态，并刷新热搜数据
 async function fullReset() {
-  console.log('[index] fullReset() 被调用');
   kw.value = "";
   resetSearch();
   // 重置时刷新热搜数据
-  console.log('[index] hotSearchRef.value:', hotSearchRef.value);
-
   if (hotSearchRef.value) {
-    console.log('[index] 调用 hotSearchRef.value.refresh()');
     await hotSearchRef.value.refresh();
-    console.log('[index] refresh() 完成');
-  } else {
-    console.log('[index] hotSearchRef.value 为 null，无法刷新热搜');
   }
 }
 
@@ -329,66 +322,67 @@ function visibleSorted(items: any[]) {
   gap: 24px;
 }
 
-/* 英雄区域 - 紧凑版 */
+/* 英雄区域 */
 .hero {
-  background: var(--bg-glass);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  text-align: center;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(160deg, rgba(15, 118, 110, 0.08), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.08);
   position: relative;
   overflow: hidden;
 }
-
 
 .hero-content {
   position: relative;
   z-index: 1;
 }
 
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(99, 102, 241, 0.08);
-  padding: 4px 12px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(99, 102, 241, 0.15);
-}
-
-.brand-emoji {
-  font-size: 16px;
-  filter: drop-shadow(0 1px 2px rgba(99, 102, 241, 0.2));
-}
-
-.brand-name {
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 14px;
+.hero-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  font-weight: 800;
 }
 
 .hero-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
+  font-size: 34px;
+  font-weight: 900;
+  margin: 0 0 10px;
   color: var(--text-primary);
-  letter-spacing: -0.3px;
-  line-height: 1.3;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  max-width: 680px;
 }
 
 .hero-description {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
-  opacity: 0.9;
+  max-width: 760px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.25);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* 统计和过滤器栏 */
@@ -443,9 +437,9 @@ function visibleSorted(items: any[]) {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(15, 118, 110, 0.1);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(15, 118, 110, 0.2);
 }
 
 .pulse-dot {
@@ -500,7 +494,9 @@ function visibleSorted(items: any[]) {
   font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -514,7 +510,7 @@ function visibleSorted(items: any[]) {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
 }
 
 /* 排序选择器 */
@@ -533,7 +529,8 @@ function visibleSorted(items: any[]) {
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   min-width: 140px;
 }
 
@@ -545,7 +542,7 @@ function visibleSorted(items: any[]) {
 .sort-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
 /* 搜索结果区域 */
@@ -624,16 +621,25 @@ function visibleSorted(items: any[]) {
 /* 移动端优化 */
 @media (max-width: 640px) {
   .hero {
-    padding: 16px 12px;
-    border-radius: var(--radius-md);
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .hero-kicker {
+    font-size: 11px;
   }
 
   .hero-title {
-    font-size: 18px;
+    font-size: 26px;
   }
 
   .hero-description {
-    font-size: 12px;
+    font-size: 13px;
+  }
+
+  .hero-chip {
+    padding: 5px 9px;
+    font-size: 11px;
   }
 
   .stats-bar {
@@ -691,13 +697,13 @@ function visibleSorted(items: any[]) {
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .hero {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(160deg, rgba(15, 118, 110, 0.16), rgba(245, 158, 11, 0.14));
+    border-color: rgba(45, 212, 191, 0.24);
   }
 
-  .brand-badge {
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.2);
+  .hero-chip {
+    background: rgba(17, 24, 39, 0.45);
+    border-color: rgba(45, 212, 191, 0.35);
   }
 
   .stat-item {
@@ -706,8 +712,8 @@ function visibleSorted(items: any[]) {
   }
 
   .loading-indicator {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(15, 118, 110, 0.18);
+    border-color: rgba(15, 118, 110, 0.3);
   }
 
   .filter-pill {
