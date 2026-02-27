@@ -112,20 +112,20 @@ function formatDate(d?: string) {
 <style scoped>
 /* 结果卡片主体 - 玻璃拟态设计 */
 .result-card {
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.06);
   overflow: hidden;
   transition: box-shadow var(--transition-normal), transform var(--transition-normal),
     border-color var(--transition-normal);
 }
 
 .result-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(17, 24, 39, 0.1);
+  transform: translateY(-3px);
 }
 
 /* 卡片头部 */
@@ -134,7 +134,7 @@ function formatDate(d?: string) {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
   border-bottom: 1px solid var(--border-light);
   position: relative;
 }
@@ -145,23 +145,23 @@ function formatDate(d?: string) {
   bottom: 0;
   left: 16px;
   right: 16px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--primary), transparent);
-  opacity: 0.3;
+  height: 1px;
+  background: linear-gradient(90deg, var(--primary), transparent 70%);
+  opacity: 0.25;
 }
 
 /* 平台徽章 */
 .platform-badge {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 16px;
   font-weight: 700;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 5px 10px rgba(17, 24, 39, 0.2);
   flex-shrink: 0;
 }
 
@@ -260,7 +260,7 @@ function formatDate(d?: string) {
 }
 
 .resource-item:hover {
-  background: rgba(99, 102, 241, 0.03);
+  background: rgba(15, 118, 110, 0.04);
 }
 
 .resource-content {
@@ -404,7 +404,7 @@ function formatDate(d?: string) {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
   color: white;
   border: none;
   border-radius: var(--radius-md);
@@ -412,12 +412,12 @@ function formatDate(d?: string) {
   font-weight: 600;
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 .load-more-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.4);
 }
 
 .load-more-btn:active {

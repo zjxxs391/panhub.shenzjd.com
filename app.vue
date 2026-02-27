@@ -312,7 +312,7 @@ button {
 }
 
 .nav {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 16px 24px;
   display: flex;
@@ -339,7 +339,7 @@ button {
 
 .brand-icon {
   font-size: 24px;
-  filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3));
+  filter: drop-shadow(0 2px 4px rgba(15, 118, 110, 0.3));
 }
 
 .brand-text {
@@ -406,7 +406,7 @@ button {
 .main {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 24px;
   animation: fadeIn 0.5s ease;
@@ -503,7 +503,7 @@ button {
   }
 
   .header {
-    background: rgba(15, 23, 42, 0.7);
+    background: rgba(17, 24, 39, 0.7);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 

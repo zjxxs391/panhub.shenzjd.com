@@ -205,10 +205,10 @@ onMounted(() => {
   gap: 12px;
   padding: 12px 16px;
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-medium);
+  border-radius: 18px;
   box-shadow: var(--shadow-lg);
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal),
     transform var(--transition-normal);
@@ -222,7 +222,7 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg, var(--primary), var(--secondary));
   opacity: 0;
   transition: opacity var(--transition-normal);
@@ -230,8 +230,8 @@ onMounted(() => {
 
 .search-box.focused {
   border-color: var(--primary);
-  box-shadow: 0 8px 32px rgba(15, 118, 110, 0.22);
-  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(15, 118, 110, 0.14);
+  transform: translateY(-2px);
 }
 
 .search-box.focused::before {
@@ -240,7 +240,7 @@ onMounted(() => {
 
 .search-box.loading {
   border-color: var(--primary);
-  animation: searchPulse 2s ease-in-out infinite;
+  animation: searchPulse 2.2s ease-in-out infinite;
 }
 
 @keyframes searchPulse {
@@ -329,14 +329,14 @@ onMounted(() => {
 
 /* 主要按钮 - 渐变背景 */
 .action-btn.primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
   color: white;
   box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 .action-btn.primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.42);
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.36);
 }
 
 .action-btn.primary:active:not(:disabled) {
@@ -345,14 +345,14 @@ onMounted(() => {
 
 /* 幽灵按钮 - 透明背景 */
 .action-btn.ghost {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.5);
   color: var(--text-secondary);
   border: 1px solid var(--border-light);
   padding: 8px;
 }
 
 .action-btn.ghost:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-color: var(--border-medium);
   color: var(--text-primary);
 }

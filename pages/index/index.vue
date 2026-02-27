@@ -325,67 +325,78 @@ function visibleSorted(items: any[]) {
   gap: 24px;
 }
 
-/* 英雄区域 - 紧凑版 */
+/* 英雄区域 */
 .hero {
-  background: var(--bg-glass);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  text-align: center;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(160deg, rgba(15, 118, 110, 0.08), rgba(245, 158, 11, 0.1));
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.08);
   position: relative;
   overflow: hidden;
 }
-
 
 .hero-content {
   position: relative;
   z-index: 1;
 }
 
-.brand-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(15, 118, 110, 0.1);
-  padding: 4px 12px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-  border: 1px solid rgba(15, 118, 110, 0.2);
-  cursor: pointer;
-}
-
-.brand-emoji {
-  font-size: 16px;
-  filter: drop-shadow(0 1px 2px rgba(15, 118, 110, 0.2));
-}
-
-.brand-name {
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 14px;
+.hero-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  font-weight: 800;
 }
 
 .hero-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 0 6px 0;
+  font-size: 34px;
+  font-weight: 900;
+  margin: 0 0 10px;
   color: var(--text-primary);
-  letter-spacing: -0.3px;
-  line-height: 1.3;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  max-width: 680px;
 }
 
 .hero-description {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
-  opacity: 0.9;
+  max-width: 760px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.25);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero-reset {
+  margin-top: 16px;
+  padding: 8px 12px;
+  border: 1px dashed rgba(15, 118, 110, 0.35);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* 统计和过滤器栏 */
@@ -624,16 +635,31 @@ function visibleSorted(items: any[]) {
 /* 移动端优化 */
 @media (max-width: 640px) {
   .hero {
-    padding: 16px 12px;
-    border-radius: var(--radius-md);
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .hero-kicker {
+    font-size: 11px;
   }
 
   .hero-title {
-    font-size: 18px;
+    font-size: 26px;
   }
 
   .hero-description {
-    font-size: 12px;
+    font-size: 13px;
+  }
+
+  .hero-chip {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .hero-reset {
+    width: 100%;
+    margin-top: 12px;
+    text-align: center;
   }
 
   .stats-bar {
@@ -691,13 +717,19 @@ function visibleSorted(items: any[]) {
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .hero {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(160deg, rgba(15, 118, 110, 0.16), rgba(245, 158, 11, 0.14));
+    border-color: rgba(45, 212, 191, 0.24);
   }
 
-  .brand-badge {
-    background: rgba(15, 118, 110, 0.2);
-    border-color: rgba(15, 118, 110, 0.3);
+  .hero-chip {
+    background: rgba(17, 24, 39, 0.45);
+    border-color: rgba(45, 212, 191, 0.35);
+  }
+
+  .hero-reset {
+    background: rgba(17, 24, 39, 0.4);
+    border-color: rgba(45, 212, 191, 0.4);
+    color: #ccfbf1;
   }
 
   .stat-item {
