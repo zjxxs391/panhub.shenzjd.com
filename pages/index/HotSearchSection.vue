@@ -49,22 +49,18 @@ const hasInitialized = ref(false);
 
 // 获取热搜数据
 async function fetchHotSearches() {
-  console.log('[HotSearchSection] 开始获取热搜数据...');
   loading.value = true;
   try {
     const response = await fetch('/api/hot-searches?limit=30');
     const data = await response.json();
-    console.log('[HotSearchSection] API 响应:', data);
 
     if (data.code === 0 && data.data?.hotSearches) {
       // 按分数排序，高分在前
       searches.value = data.data.hotSearches
         .sort((a: HotSearchItem, b: HotSearchItem) => b.score - a.score)
         .slice(0, 30);
-      console.log('[HotSearchSection] 获取到热搜数据:', searches.value.length, '条');
     }
   } catch (error) {
-    console.error('[HotSearchSection] 获取热搜失败:', error);
     // 失败时不显示任何内容
     searches.value = [];
   } finally {
@@ -75,17 +71,14 @@ async function fetchHotSearches() {
 // 首次初始化（只在页面加载时执行一次）
 async function init() {
   if (hasInitialized.value) {
-    console.log('[HotSearchSection] 已初始化，跳过');
     return;
   }
-  console.log('[HotSearchSection] 首次初始化...');
   hasInitialized.value = true;
   await fetchHotSearches();
 }
 
 // 刷新数据（每次重置时调用）
 async function refresh() {
-  console.log('[HotSearchSection] 手动刷新数据...');
   await fetchHotSearches();
 }
 
@@ -190,7 +183,8 @@ defineExpose({
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease,
+    background-color 200ms ease;
   white-space: nowrap;
   text-align: center;
   line-height: 1.2;
@@ -223,7 +217,7 @@ defineExpose({
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(99, 102, 241, 0.2);
+  border: 3px solid rgba(15, 118, 110, 0.2);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;

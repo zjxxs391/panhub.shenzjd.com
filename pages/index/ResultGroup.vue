@@ -119,7 +119,8 @@ function formatDate(d?: string) {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
 .result-card:hover {
@@ -204,7 +205,8 @@ function formatDate(d?: string) {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), transform var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -277,7 +279,7 @@ function formatDate(d?: string) {
   font-weight: 600;
   font-size: 14px;
   line-height: 1.4;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), gap var(--transition-fast);
   word-break: break-word;
   overflow-wrap: anywhere;
 }
@@ -295,7 +297,7 @@ function formatDate(d?: string) {
 .external-icon {
   opacity: 0;
   transform: translateX(-4px);
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -368,7 +370,8 @@ function formatDate(d?: string) {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), transform var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -408,7 +411,7 @@ function formatDate(d?: string) {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 

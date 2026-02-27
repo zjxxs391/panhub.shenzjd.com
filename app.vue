@@ -19,14 +19,16 @@
           <a
             href="https://github.com/wu529778790/panhub.shenzjd.com"
             target="_blank"
+            rel="noopener noreferrer"
             class="btn-icon github-btn"
+            aria-label="打开 GitHub 仓库"
             title="GitHub 仓库">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
             </svg>
           </a>
           <!-- 设置按钮 -->
-          <button class="btn-icon" type="button" @click="openSettings = true" title="设置">
+          <button class="btn-icon" type="button" @click="openSettings = true" aria-label="打开设置" title="设置">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -53,7 +55,7 @@
     </ClientOnly>
 
     <!-- Toast 通知 -->
-    <div v-if="toast.show" class="toast" :class="toast.type">
+    <div v-if="toast.show" class="toast" :class="toast.type" role="status" aria-live="polite">
       {{ toast.message }}
     </div>
   </div>
@@ -107,24 +109,26 @@ provide('showToast', showToast);
 
 <style>
 /* 全局样式重置和现代化设计系统 */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap");
+
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --secondary: #8b5cf6;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --secondary: #f59e0b;
   --success: #10b981;
-  --warning: #f59e0b;
+  --warning: #d97706;
   --error: #ef4444;
 
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-primary: #fffdf8;
+  --bg-secondary: #f7f3ea;
+  --bg-glass: rgba(255, 253, 248, 0.86);
 
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-tertiary: #94a3b8;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
 
-  --border-light: #e2e8f0;
-  --border-medium: #cbd5e1;
+  --border-light: #e5dfd0;
+  --border-medium: #d4c7ab;
 
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -150,8 +154,10 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  font-family: "Manrope", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: radial-gradient(circle at 12% -10%, #fff3d9 0%, transparent 42%),
+    radial-gradient(circle at 90% 8%, #d9f7f3 0%, transparent 35%),
+    #fffdf8;
   color: var(--text-primary);
 
   /* iOS Safari兼容性 */
@@ -261,15 +267,15 @@ button {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.4;
+  filter: blur(48px);
+  opacity: 0.28;
   animation: blobFloat 8s ease-in-out infinite;
 }
 
 .blob-1 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
   top: -100px;
   left: -100px;
   animation-delay: 0s;
@@ -278,7 +284,7 @@ button {
 .blob-2 {
   width: 300px;
   height: 300px;
-  background: linear-gradient(135deg, #ec4899, #f43f5e);
+  background: linear-gradient(135deg, #f59e0b, #fb7185);
   bottom: -50px;
   right: -50px;
   animation-delay: 2s;
@@ -287,7 +293,7 @@ button {
 .blob-3 {
   width: 250px;
   height: 250px;
-  background: linear-gradient(135deg, #10b981, #06b6d4);
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
   top: 50%;
   left: 70%;
   animation-delay: 4s;
@@ -361,7 +367,8 @@ button {
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -479,18 +486,20 @@ button {
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-glass: rgba(15, 23, 42, 0.7);
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #64748b;
-    --border-light: #334155;
-    --border-medium: #475569;
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-glass: rgba(17, 24, 39, 0.76);
+    --text-primary: #f3f4f6;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #6b7280;
+    --border-light: #374151;
+    --border-medium: #4b5563;
   }
 
   body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    background: radial-gradient(circle at 12% -10%, #0f3d37 0%, transparent 42%),
+      radial-gradient(circle at 90% 8%, #4a2d08 0%, transparent 35%),
+      #0b1220;
   }
 
   .header {

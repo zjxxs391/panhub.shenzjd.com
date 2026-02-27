@@ -195,6 +195,7 @@ function onClearAllTg() {
   display: flex;
   flex-direction: column;
   overflow: auto;
+  overscroll-behavior: contain;
   border-left: 1px solid rgba(255, 255, 255, 0.2);
   animation: slideInRight 0.3s ease;
 }
@@ -265,7 +266,8 @@ function onClearAllTg() {
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    transform var(--transition-fast);
   min-width: 0;
 }
 
@@ -315,13 +317,14 @@ function onClearAllTg() {
   border-radius: var(--radius-md);
   font-size: 13px;
   color: var(--text-primary);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
 .input::placeholder {
@@ -338,7 +341,9 @@ function onClearAllTg() {
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: all var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -356,11 +361,11 @@ function onClearAllTg() {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 .btn--primary:hover {
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.42);
 }
 
 /* 抽屉底部 */
