@@ -225,7 +225,7 @@ function getSearchOptions() {
 
 // 搜索执行
 async function onSearch() {
-  if (!kw.value || searchState.value.loading) return;
+  if (!kw.value || loading) return;
 
   // 执行搜索（内部会记录热搜词）
   await performSearch(getSearchOptions());
@@ -239,7 +239,7 @@ async function quickSearch(keyword: string) {
 
 // 继续搜索（从暂停处继续）
 async function handleContinueSearch() {
-  if (!searchState.value.paused) return;
+  if (!paused) return;
   await continueSearch(getSearchOptions());
 }
 
@@ -256,10 +256,6 @@ async function fullReset() {
 const platformName = (t: string): string => PLATFORM_INFO[t]?.name || t;
 const platformColor = (t: string): string => PLATFORM_INFO[t]?.color || "#9ca3af";
 const platformIcon = (t: string): string => PLATFORM_INFO[t]?.icon || "📦";
-
-// 计算属性
-// 平台列表现在从 store getter 获取
-const hasResults = computed(() => searchStore.hasResults);
 
 const groupedResults = computed(() => {
   const list: Array<{ type: string; items: any[] }> = [];
