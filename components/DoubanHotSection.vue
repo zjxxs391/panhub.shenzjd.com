@@ -1,60 +1,110 @@
 <template>
   <div v-if="!hasAnyData" class="hidden"></div>
 
-  <div v-else class="douban-movie-section">
-    <div class="section-head">
-      <h2 class="section-title">
-        豆瓣{{ currentCategory?.label }} · {{ currentCategory?.type || "榜单" }}
-      </h2>
-      <p class="section-subtitle">点击可快速发起网盘搜索</p>
-    </div>
-
-    <!-- 分类 Tabs -->
-    <div class="category-tabs">
+  <div v-else class="douban-section">
+    <!-- 分类 Tabs - 始终可点击 -->
+    <nav class="category-nav" role="tablist">
       <button
         v-for="cat in availableCategories"
         :key="cat.id"
-        :class="['tab-btn', { active: selectedCategoryId === cat.id }]"
+        :class="['tab-button', { 'is-active': selectedCategoryId === cat.id }]"
+        :aria-selected="selectedCategoryId === cat.id"
+        role="tab"
         @click="selectCategory(cat.id)"
       >
-        {{ cat.type || "榜单" }}
+        <span class="tab-label">{{ cat.label }}</span>
+        <span class="tab-type">{{ cat.type || "榜单" }}</span>
       </button>
-    </div>
+    </nav>
 
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <span>加载中…</span>
-    </div>
-    <div v-else class="movie-grid">
-      <button
-        v-for="item in movieItems"
-        :key="(item.id ?? 0) + item.title"
-        class="movie-card"
-        :aria-label="`搜索 ${extractTerm(item.title)}`"
-        @click="onItemClick(item.title)"
+    <!-- 内容区域 -->
+    <div class="content-area">
+      <!-- 骨架屏 Loading -->
+      <div v-if="loading && items.length === 0" class="skeleton-grid">
+        <div
+          v-for="i in 10"
+          :key="`skeleton-${i}`"
+          class="skeleton-card"
+          :style="{ animationDelay: `${i * 0.05}s` }"
+        >
+          <div class="skeleton-cover">
+            <div class="skeleton-shimmer"></div>
+          </div>
+          <div class="skeleton-info">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-desc"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 内容网格 -->
+      <transition
+        name="grid-transition"
+        mode="out-in"
+        @before-enter="onBeforeEnter"
+        @enter="onEnter"
+        @leave="onLeave"
       >
-        <div class="movie-cover">
-          <img
-            v-if="item.cover && !imgFailed.includes(item.id ?? 0)"
-            :src="proxyCover(item.cover)"
-            :alt="extractTerm(item.title)"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-            @error="onImgError(item.id ?? 0)"
-          />
-          <div v-else class="cover-placeholder">🎬</div>
+        <div v-show="!loading || items.length > 0" key="content" class="movie-grid">
+          <transition-group
+            name="card-fade"
+            tag="div"
+            class="grid-container"
+          >
+            <button
+              v-for="item in items"
+              :key="item.id || item.title"
+              class="movie-card"
+              :aria-label="`搜索 ${extractTerm(item.title)}`"
+              @click="onItemClick(item.title)"
+            >
+              <div class="card-cover">
+                <img
+                  v-if="item.cover && !imgFailed.includes(item.id ?? 0)"
+                  :src="proxyCover(item.cover)"
+                  :alt="extractTerm(item.title)"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  @error="onImgError(item.id ?? 0)"
+                />
+                <div v-else class="cover-placeholder">🎬</div>
+              </div>
+              <div class="card-info">
+                <span class="card-title">{{ extractTerm(item.title) }}</span>
+                <span v-if="item.desc" class="card-desc">{{ item.desc }}</span>
+              </div>
+            </button>
+          </transition-group>
         </div>
-        <div class="movie-info">
-          <span class="movie-title">{{ extractTerm(item.title) }}</span>
-          <span v-if="item.desc" class="movie-desc">{{ item.desc }}</span>
+      </transition>
+
+      <!-- 加载更多 -->
+      <div v-if="items.length > 0" class="load-section">
+        <div
+          v-if="hasMore || loadingMore"
+          ref="loadTriggerRef"
+          class="load-trigger"
+        >
+          <div v-if="loadingMore" class="loading-more">
+            <div class="spinner-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span>加载更多…</span>
+          </div>
         </div>
-      </button>
+
+        <div v-else-if="items.length > 0" class="end-message">
+          — 已经到底了 —
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onBeforeUnmount, nextTick } from "vue";
 
 interface Props {
   onSearch: (term: string) => void;
@@ -69,21 +119,17 @@ interface DoubanHotItem {
   hot?: number;
 }
 
-interface DoubanHotCategory {
-  id: string;
-  label: string;
-  title: string;
-  type: string;
-  items: DoubanHotItem[];
-}
-
 const props = defineProps<Props>();
 
 const loading = ref(false);
-const categories = ref<Record<string, DoubanHotCategory>>({});
-const hasInitialized = ref(false);
+const loadingMore = ref(false);
+const items = ref<DoubanHotItem[]>([]);
+const hasMore = ref(true);
 const imgFailed = ref<number[]>([]);
 const selectedCategoryId = ref<string>("douban-top250");
+const currentPage = ref(1);
+const loadObserver = ref<IntersectionObserver | null>(null);
+const loadTriggerRef = ref<HTMLElement | null>(null);
 
 // 所有可用的分类配置
 const availableCategories = computed(() => {
@@ -95,21 +141,9 @@ const availableCategories = computed(() => {
   ];
 });
 
-// 当前选中的分类
-const currentCategory = computed(() => {
-  return categories.value[selectedCategoryId.value];
-});
-
-// 当前分类的项目
-const movieItems = computed(() => {
-  return currentCategory.value?.items ?? [];
-});
-
 // 是否有任何数据
 const hasAnyData = computed(() => {
-  if (loading.value) return true;
-  // 只要有一个分类有数据就显示
-  return Object.values(categories.value).some(cat => cat.items.length > 0);
+  return items.value.length > 0 || loading.value;
 });
 
 function onImgError(id: number) {
@@ -127,27 +161,111 @@ function proxyCover(url: string): string {
   return `/api/img?url=${encodeURIComponent(url)}`;
 }
 
-async function fetchDoubanHot() {
-  loading.value = true;
+async function fetchCategoryData(categoryId: string, page: number, append = false) {
+  if (page === 1) {
+    loading.value = true;
+  } else {
+    loadingMore.value = true;
+  }
+
   try {
-    // 获取所有分类的数据
-    const allCategories = availableCategories.value.map(c => c.id).join(",");
-    const response = await fetch(`/api/douban-hot?categories=${allCategories}`);
+    const response = await fetch(`/api/douban-hot?category=${categoryId}&page=${page}&limit=25`);
     const data = await response.json();
-    if (data.code === 0 && data.data?.categories) {
-      categories.value = data.data.categories;
+
+    if (data.code === 0 && data.data) {
+      const newItems = data.data.items || [];
+      if (append) {
+        items.value = [...items.value, ...newItems];
+      } else {
+        items.value = newItems;
+      }
+      hasMore.value = data.data.hasMore !== undefined ? data.data.hasMore : newItems.length >= 25;
+      currentPage.value = page;
     } else {
-      categories.value = {};
+      if (!append) {
+        items.value = [];
+      }
+      hasMore.value = false;
     }
   } catch {
-    categories.value = {};
+    if (!append) {
+      items.value = [];
+    }
+    hasMore.value = false;
   } finally {
     loading.value = false;
+    loadingMore.value = false;
   }
 }
 
-function selectCategory(categoryId: string) {
+async function selectCategory(categoryId: string) {
+  // 如果点击的是当前分类且有数据且正在加载，不做处理
+  if (categoryId === selectedCategoryId.value && items.value.length > 0 && loading.value) return;
+
+  // 立即更新状态和清空内容，给用户即时反馈
   selectedCategoryId.value = categoryId;
+  currentPage.value = 1;
+  hasMore.value = true;
+  items.value = []; // 立即清空当前内容
+  loading.value = true; // 立即显示骨架屏
+
+  // 开始获取新数据
+  await fetchCategoryData(categoryId, 1, false);
+  await nextTick();
+  setupLoadMoreObserver();
+}
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value) return;
+  await fetchCategoryData(selectedCategoryId.value, currentPage.value + 1, true);
+}
+
+function setupLoadMoreObserver() {
+  if (loadObserver.value) {
+    loadObserver.value.disconnect();
+  }
+
+  nextTick(() => {
+    const target = loadTriggerRef.value;
+    if (!target) return;
+
+    loadObserver.value = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore.value && !loading.value && !loadingMore.value) {
+          loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    loadObserver.value.observe(target);
+  });
+}
+
+// Transition hooks
+function onBeforeEnter(el: Element) {
+  (el as HTMLElement).style.opacity = '0';
+}
+
+function onEnter(el: Element, done: () => void) {
+  const element = el as HTMLElement;
+  element.style.transition = 'opacity 0.3s ease-out';
+
+  requestAnimationFrame(() => {
+    element.style.opacity = '1';
+    setTimeout(done, 300);
+  });
+}
+
+function onLeave(el: Element, done: () => void) {
+  const element = el as HTMLElement;
+  element.style.transition = 'opacity 0.2s ease-in';
+  element.style.opacity = '0';
+  setTimeout(done, 200);
 }
 
 function onItemClick(title: string) {
@@ -156,107 +274,192 @@ function onItemClick(title: string) {
 }
 
 async function init() {
-  if (hasInitialized.value) return;
-  hasInitialized.value = true;
-  await fetchDoubanHot();
+  await fetchCategoryData(selectedCategoryId.value, 1, false);
+  await nextTick();
+  setupLoadMoreObserver();
 }
 
 async function refresh() {
-  await fetchDoubanHot();
+  currentPage.value = 1;
+  hasMore.value = true;
+  await fetchCategoryData(selectedCategoryId.value, 1, false);
 }
+
+onBeforeUnmount(() => {
+  if (loadObserver.value) {
+    loadObserver.value.disconnect();
+  }
+});
 
 defineExpose({ init, refresh });
 </script>
 
 <style scoped>
-.douban-movie-section {
+.douban-section {
   width: 100%;
 }
 
-.section-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.section-subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-
-.category-tabs {
+/* 分类导航 */
+.category-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 20px;
+  padding: 8px 0;
 }
 
-.tab-btn {
-  padding: 6px 12px;
+.tab-button {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
+  color: var(--text-secondary, #6b7280);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 180ms ease;
-  white-space: nowrap;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.tab-btn:hover {
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text-primary);
-  border-color: var(--primary);
+.tab-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.tab-btn.active {
-  color: var(--primary);
+.tab-button:hover::before {
+  opacity: 1;
+}
+
+.tab-button:active {
+  transform: scale(0.98);
+}
+
+.tab-button.is-active {
+  color: var(--primary, #0f766e);
   background: rgba(15, 118, 110, 0.08);
-  border-color: var(--primary);
+  border-color: var(--primary, #0f766e);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.15);
+}
+
+.tab-label {
   font-weight: 600;
 }
 
-.loading-state {
+.tab-type {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* 内容区域 */
+.content-area {
+  position: relative;
+  min-height: 300px;
+}
+
+/* 骨架屏 Loading */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.skeleton-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 48px 20px;
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: skeleton-pulse 2s ease-in-out infinite;
 }
 
-.spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(15, 118, 110, 0.2);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.skeleton-cover {
+  aspect-ratio: 2 / 3;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.skeleton-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
-.movie-grid {
+.skeleton-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeleton-title {
+  height: 32px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #d1d5db 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-desc {
+  height: 12px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite 0.2s;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 网格容器 */
+.grid-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 12px;
@@ -266,33 +469,40 @@ defineExpose({ init, refresh });
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-align: left;
   padding: 0;
+  will-change: transform;
 }
 
 .movie-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.15);
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.12);
 }
 
-.movie-cover {
+.card-cover {
   aspect-ratio: 2 / 3;
   background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
   overflow: hidden;
+  position: relative;
 }
 
-.movie-cover img {
+.card-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.movie-card:hover .card-cover img {
+  transform: scale(1.05);
 }
 
 .cover-placeholder {
@@ -301,21 +511,22 @@ defineExpose({ init, refresh });
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 32px;
+  background: rgba(15, 118, 110, 0.05);
 }
 
-.movie-info {
-  padding: 8px 10px;
+.card-info {
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-height: 0;
 }
 
-.movie-title {
-  font-size: 12px;
+.card-title {
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #1f2937);
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -323,61 +534,250 @@ defineExpose({ init, refresh });
   overflow: hidden;
 }
 
-.movie-desc {
-  font-size: 10px;
-  color: var(--text-tertiary);
+.card-desc {
+  font-size: 11px;
+  color: var(--text-tertiary, #9ca3af);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* 加载更多区域 */
+.load-section {
+  margin-top: 8px;
+}
+
+.load-trigger {
+  padding: 24px 0;
+  min-height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary, #6b7280);
+  font-size: 14px;
+}
+
+.spinner-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.spinner-dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--primary, #0f766e);
+  border-radius: 50%;
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.spinner-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.spinner-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.end-message {
+  padding: 20px 0;
+  text-align: center;
+  color: var(--text-tertiary, #9ca3af);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* 过渡动画 */
+.grid-transition-enter-active,
+.grid-transition-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.grid-transition-enter-from,
+.grid-transition-leave-to {
+  opacity: 0;
+}
+
+.card-fade-enter-active,
+.card-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.card-fade-enter-from,
+.card-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.card-fade-move {
+  transition: transform 0.3s ease;
+}
+
+/* 隐藏 */
 .hidden {
   display: none;
 }
 
-@media (max-width: 500px) {
-  .movie-grid {
+/* 响应式 */
+@media (max-width: 640px) {
+  .category-nav {
+    gap: 6px;
+  }
+
+  .tab-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .skeleton-grid,
+  .grid-container {
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
+  }
+
+  .card-title {
+    font-size: 12px;
+  }
+
+  .card-desc {
+    font-size: 10px;
   }
 }
 
 @media (min-width: 640px) {
-  .movie-grid {
+  .grid-container {
     gap: 14px;
   }
 
-  .movie-title {
+  .card-title {
     font-size: 13px;
   }
 }
 
+/* 深色模式 */
 @media (prefers-color-scheme: dark) {
-  .loading-state,
-  .movie-card {
-    background: rgba(17, 24, 39, 0.6);
+  .tab-button {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(100, 116, 139, 0.3);
+    color: var(--text-secondary, #9ca3af);
+  }
+
+  .tab-button:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(100, 116, 139, 0.5);
+  }
+
+  .tab-button.is-active {
+    background: rgba(15, 118, 110, 0.15);
+    border-color: var(--primary, #0f766e);
+    color: #5eead4;
+  }
+
+  .skeleton-card {
+    background: rgba(30, 41, 59, 0.6);
     border-color: rgba(75, 85, 99, 0.4);
   }
 
-  .movie-cover {
+  .skeleton-cover {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  }
+
+  .skeleton-title {
+    background: linear-gradient(90deg, #4b5563 25%, #6b7280 50%, #4b5563 75%);
+  }
+
+  .skeleton-desc {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  }
+
+  .movie-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(75, 85, 99, 0.4);
+  }
+
+  .card-cover {
     background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
   }
 
+  .cover-placeholder {
+    background: rgba(15, 118, 110, 0.1);
+  }
+
   .movie-card:hover {
-    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.25);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2);
+  }
+
+  .card-title {
+    color: var(--text-primary, #f9fafb);
+  }
+
+  .card-desc {
+    color: var(--text-tertiary, #6b7280);
+  }
+
+  .end-message {
+    color: var(--text-tertiary, #6b7280);
   }
 }
 
+/* 减少动画模式 */
 @media (prefers-reduced-motion: reduce) {
-  .spinner,
-  .movie-card {
-    animation: none;
+  .tab-button,
+  .movie-card,
+  .skeleton-card {
     transition: none;
+    animation: none;
   }
 
   .movie-card:hover {
     transform: none;
+  }
+
+  .grid-transition-enter-active,
+  .grid-transition-leave-active,
+  .card-fade-enter-active,
+  .card-fade-leave-active {
+    transition: none;
+  }
+
+  .card-fade-move {
+    transition: none;
+  }
+
+  .skeleton-shimmer {
+    animation: none;
+  }
+
+  .skeleton-cover {
+    background: #f0f0f0;
+  }
+
+  .skeleton-title,
+  .skeleton-desc {
+    background: #e5e7eb;
+    animation: none;
+  }
+
+  .spinner-dots span {
+    animation: none;
   }
 }
 </style>

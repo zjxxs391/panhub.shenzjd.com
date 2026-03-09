@@ -4,6 +4,7 @@
  */
 
 export const DOUBAN_HOT_SOURCES = [
+  // 电影榜单
   { id: "douban-top250", label: "电影", route: "douban-top250", type: "Top250" },
   { id: "douban-movie", label: "电影", route: "douban-movie", type: "新片榜" },
   { id: "douban-weekly", label: "电影", route: "douban-weekly", type: "口碑榜" },

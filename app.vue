@@ -63,7 +63,7 @@
     <ClientOnly>
       <PasswordGate
         :show="showPasswordGate"
-        :error="auth.error"
+        :error="auth.error.value || ''"
         :submitting="unlockSubmitting"
         @unlock="onUnlock" />
     </ClientOnly>
